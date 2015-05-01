@@ -3,13 +3,14 @@ package com.telus.sddi.eAUDIT_BatchOps;
 public class DemoAdapterData {
 	
 	public DemoAdapterData(String cardNumber, String cardLabel,
-			String cardActivation, String cardType, String cardDeactivation) {
+			String cardActivation, String cardType, String cardDeactivation, String entitlement) {
 		super();
 		this.cardNumber = cardNumber;
 		this.cardLabel = cardLabel;
 		this.cardActivation = cardActivation;
 		this.cardType = cardType;
 		this.cardDeactivation = cardDeactivation;
+		this.entitlement = entitlement;
 	}
 	
 	private String cardNumber;
@@ -17,6 +18,7 @@ public class DemoAdapterData {
 	private String cardActivation;
 	private String cardType;
 	private String cardDeactivation;
+	private String entitlement;
 	
 	
 	public String getCardNumber() {
@@ -48,6 +50,12 @@ public class DemoAdapterData {
 	}
 	public void setCardDeactivation(String cardDeactivation) {
 		this.cardDeactivation = cardDeactivation;
+	}
+	public String getEntitlement() {
+		return entitlement;
+	}
+	public void setEntitlement(String entitlement) {
+		this.entitlement = entitlement;
 	}
 	
 	
