@@ -463,7 +463,7 @@ public class Ops_ExcelDataLoader {
 	
 	
 	/**
-	 * A method that takes a special Escale template and loads up all the data into the eAUDIT database
+	 * A method that takes a special Excel template and loads up all the data into the eAUDIT database
 	 * @param fullPathToSpreadsheet
 	 */
 	public static void loadFromExcelTemplate(String fullPathToSpreadsheet ) {

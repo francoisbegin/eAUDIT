@@ -29,7 +29,7 @@ public class Main {
 	
 	
 	public enum routines {
-		loadFromExcelTemplate, help, verbose, version
+		loadFromExcelTemplate, loadFromAdapter, help, verbose, version
 	}
 	
 	public static String  version = "2015-04-27.2";
@@ -40,7 +40,8 @@ public class Main {
 	
 	public static String help() {
 		return 
-				"	-loadFromExcelTemplate\t\tLoad data from an eAUDIT Excel template into the eAUDIT database \n" +
+				"   -loadFromAdapter\t\tLoad data into the eAUDIT adapter using an adapter \n" +
+				"	-loadFromExcelTemplate\t\tLoad data into the eAUDIT database using an Excel template \n" +
 				"	-version\t\t\t\tShows version.\n"+
 				"	-verbose \t\t\t\tRun script in verbose mode.\n" +
 				"	-help \t\t\t\t\tList switches available.\n";
@@ -67,6 +68,7 @@ public class Main {
 	public static void main(String[] args) throws SQLException, MalformedURLException {
 		
 		Boolean loadFromExcelTemplate						= false;
+		Boolean loadFromAdapter								= false;
 		
 		/* 
 		 * Initialize eAUDIT itself
@@ -112,6 +114,9 @@ public class Main {
 				switch(routines.valueOf(arg)) {
 					case loadFromExcelTemplate:
 						loadFromExcelTemplate						= true;
+						break;
+					case loadFromAdapter:
+						loadFromAdapter								= true;
 						break;
 					case verbose:
 						verbose										= true;
@@ -168,6 +173,10 @@ public class Main {
 		 */
 		if ( loadFromExcelTemplate ) {
 			Ops_ExcelDataLoader.loadFromExcelTemplate(logger.getToolBasePath()+"/dataLoad/DataLoadExample.xlsx");
+		}
+		
+		if ( loadFromAdapter ) {
+			Ops_AdapterDataLoad.loadFromAdapter();
 		}
 		
 		cleanUp();
