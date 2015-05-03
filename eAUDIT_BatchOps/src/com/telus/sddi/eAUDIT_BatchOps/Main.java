@@ -32,10 +32,10 @@ public class Main {
 		loadFromExcelTemplate, loadFromAdapter, help, verbose, version
 	}
 	
-	public static String  version = "2015-04-27.2";
+	public static String  version = "2015-05-03.1";
 	public static String versionHistory() {
 		return
-				"\n   2015-04-27.2 Initial release for SANS paper";
+				"\n   2015-05-03.1 Initial release for SANS paper";
 	}
 	
 	public static String help() {

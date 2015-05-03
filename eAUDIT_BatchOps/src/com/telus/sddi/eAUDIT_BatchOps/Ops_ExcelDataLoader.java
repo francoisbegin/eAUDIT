@@ -52,7 +52,7 @@ public class Ops_ExcelDataLoader {
 	 * @return
 	 */
 	@SuppressWarnings("unused")
-	private static HashMap<Integer, AuditDataLoaderObject> translateAudtiDataRecordsFromExcelSheetToHashMap(XSSFSheet sheet, int newAuditTypeReferenceID) {
+	private static HashMap<Integer, AuditDataLoaderObject> translateAuditDataRecordsFromExcelSheetToHashMap(XSSFSheet sheet, int newAuditTypeReferenceID) {
 		//Get iterator to all the rows in current sheet
 		Iterator<Row> rowIterator = sheet.iterator();
 
@@ -220,7 +220,7 @@ public class Ops_ExcelDataLoader {
                 
                 // We have seen this entitlement/audit before
                 if ( entitlementToIDauditMap.containsKey(entitlement)) {
-                	// Known entitlement, we need to add that row to an ecisting HashMap
+                	// Known entitlement, we need to add that row to an existing HashMap
                 	int idAudit = entitlementToIDauditMap.get(entitlement);
                 	AuditDataLoaderObject existingAuditDataLoaderObject = auditDataLoaderObjectMap.get(idAudit);
                 	
@@ -499,7 +499,7 @@ public class Ops_ExcelDataLoader {
 		   		XSSFSheet sheetAuditData = workbook.getSheetAt(1);
 		   		
 		   		// We turn that sheet into a HashMap for which we have an easy method to load into the db
-		   		HashMap<Integer, AuditDataLoaderObject> sheetDataHashMap = translateAudtiDataRecordsFromExcelSheetToHashMap(sheetAuditData, newAuditTypeReferenceID);
+		   		HashMap<Integer, AuditDataLoaderObject> sheetDataHashMap = translateAuditDataRecordsFromExcelSheetToHashMap(sheetAuditData, newAuditTypeReferenceID);
 		   		System.out.println("Sheet processed. There are " + sheetDataHashMap.size() + " separate entitlement audits to load for this AuditTypeReference record # " + newAuditTypeReferenceID );
 		   		
 		   		// Finally, we can leverage the jEAUDIT library to mass-load these data into the database
