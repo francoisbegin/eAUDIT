@@ -4,11 +4,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Date;
-import java.util.ArrayList;
 
 import com.telus.sddi.UnifiedToolBoxV2.DBConnector;
 
 
+/**
+ * The Audit class, which maps to the AuditTypeReference table of the eAUDIT database
+ * @author fbegin1
+ *
+ */
 public class AuditTypeReference {
 
 	private int 		idAuditTypeReference;
@@ -32,11 +36,8 @@ public class AuditTypeReference {
 	private String 		lastUpdatedBy;
 
 
-	private static String mySelectStatement = "SELECT idAuditTypeReference,AuditName,AuditDescription,AuditStart,AuditEnd,AuditInstructionsEN,AuditInstructionsFR,UDEAprimaryFieldsEN,UDEAprimaryFieldsFR,UDEAsecondaryFieldsEN,UDEAsecondaryFieldsFR,AuditByManager,DataLoadType,eMACyclesTimelineID,UseEmac,CreatedDateTime,CreatedBy,LastUpdatedDateTime,LastUpdatedB FROM AuditTypeReference";
-
-
 	/**
-	 * Full contructor
+	 * Full constructor
 	 * @param idAuditTypeReference
 	 * @param auditName
 	 * @param auditDescription
@@ -195,32 +196,6 @@ public class AuditTypeReference {
 		}
 		return key;
 	}
-
-
-	/**
-	* A method that creates a list of all records
-	* @return ArrayList of all records
-	*/
-	public static ArrayList<AuditTypeReference> list(String databasePropertiesFile) {
-		ArrayList<AuditTypeReference> myRecords = new ArrayList<AuditTypeReference>();
-		DBConnector myDB = new DBConnector(databasePropertiesFile);
-		myDB.connect();
-		try {
-			myDB.query = mySelectStatement;
-			myDB.stmt = myDB.conn.prepareStatement(myDB.query);
-			myDB.stmt.executeQuery();
-			myDB.rs = myDB.stmt.getResultSet();
-			while (myDB.rs.next()) {
-				AuditTypeReference myCurrentRecord = new AuditTypeReference(myDB.rs);
-				myRecords.add(myCurrentRecord);
-			}
-			myDB.close();
-		} catch (Exception e) {
-			// Do something
-		}
-		return myRecords;
-	}
-
 
 
 	public int getidAuditTypeReference() {

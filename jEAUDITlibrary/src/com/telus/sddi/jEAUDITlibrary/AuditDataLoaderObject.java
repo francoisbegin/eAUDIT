@@ -66,13 +66,13 @@ public class AuditDataLoaderObject {
   		}
   		
   		if (verbose) System.out.println("Mass loading " + allAuditRecords.size() + " Audit records");
-  		Audit.create(allAuditRecords, databasePropertiesFile);
+  		AuditUtil.massLoad(allAuditRecords, databasePropertiesFile);
   		
   		if (verbose) System.out.println("Mass loading " + allEntititesRecords.size() + " Entitites records");
-  		Entities.create(allEntititesRecords, databasePropertiesFile);
+  		EntitiesUtil.massLoad(allEntititesRecords, databasePropertiesFile);
   		
   		if (verbose) System.out.println("Mass loading " + allAuthorizersRecords.size() + " Authorizers records");
-  		Authorizers.create(allAuthorizersRecords, databasePropertiesFile);
+  		AuthorizersUtil.massLoad(allAuthorizersRecords, databasePropertiesFile);
 
 	}
 	
