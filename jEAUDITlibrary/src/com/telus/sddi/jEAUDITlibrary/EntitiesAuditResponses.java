@@ -4,7 +4,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Date;
-import java.util.ArrayList;
 
 import com.telus.sddi.UnifiedToolBoxV2.DBConnector;
 
@@ -16,10 +15,6 @@ public class EntitiesAuditResponses {
 	private String 		auditHistoryKey;
 	private Date 		lastUpdatedDateTime;
 	private String 		lastUpdatedBy;
-
-
-	private static String mySelectStatement = "SELECT Entities_idEntities,RecordedResponse,AuditHistoryKey,LastUpdatedDateTime,LastUpdatedB FROM EntitiesAuditResponses";
-
 
 	/**
 	 * Default contructor
@@ -101,32 +96,6 @@ public class EntitiesAuditResponses {
 		}
 		return key;
 	}
-
-
-	/**
-	* A method that creates a list of all records
-	* @return ArrayList of all records
-	*/
-	public static ArrayList<EntitiesAuditResponses> list(String databasePropertiesFile) {
-		ArrayList<EntitiesAuditResponses> myRecords = new ArrayList<EntitiesAuditResponses>();
-		DBConnector myDB = new DBConnector(databasePropertiesFile);
-		myDB.connect();
-		try {
-			myDB.query = mySelectStatement;
-			myDB.stmt = myDB.conn.prepareStatement(myDB.query);
-			myDB.stmt.executeQuery();
-			myDB.rs = myDB.stmt.getResultSet();
-			while (myDB.rs.next()) {
-				EntitiesAuditResponses myCurrentRecord = new EntitiesAuditResponses(myDB.rs);
-				myRecords.add(myCurrentRecord);
-			}
-			myDB.close();
-		} catch (Exception e) {
-			System.out.println(e.toString());
-		}
-		return myRecords;
-	}
-
 
 
 	public int getEntities_idEntities() {
