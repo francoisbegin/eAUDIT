@@ -114,8 +114,7 @@ public class Ops_AdapterDataLoad {
 		System.out.println("Created new AuditTypeReference record with id = " + newAuditTypeReferenceRecordID);
 		
 		/*
-		 * Each entitlement corresponds to a specific Audit record.  It is important to note that the primary key of the Audit table, idAudit,
-		 * is not an auto-increment field. This allows for the controlled creation of records starting at a specific value
+		 * Each entitlement corresponds to a specific Audit record.  It is important to note that the  i
 		 */
 		
 		// Find the next idAudit
