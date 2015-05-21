@@ -17,7 +17,9 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.telus.sddi.jEAUDITlibrary.Audit;
 import com.telus.sddi.jEAUDITlibrary.AuditDataLoaderObject;
+import com.telus.sddi.jEAUDITlibrary.AuditDataLoaderObjectUtil;
 import com.telus.sddi.jEAUDITlibrary.AuditTypeReference;
+import com.telus.sddi.jEAUDITlibrary.AuditUtil;
 import com.telus.sddi.jEAUDITlibrary.Authorizers;
 import com.telus.sddi.jEAUDITlibrary.Entities;
 
@@ -78,7 +80,7 @@ public class Ops_ExcelDataLoader {
 		HashMap<Integer, AuditDataLoaderObject> auditDataLoaderObjectMap = new HashMap<Integer, AuditDataLoaderObject>();
 		
 		// Where need to know where to start inserting records in the Audit table i.e. the next available value for idAudit
-		int idAuditPointer = Audit.findMaxIDauditValue(Main.mainDB);
+		int idAuditPointer = AuditUtil.findMaxIDauditValue(Main.mainDB);
 		idAuditPointer++;
 		
 		/*
@@ -503,7 +505,7 @@ public class Ops_ExcelDataLoader {
 		   		System.out.println("Sheet processed. There are " + sheetDataHashMap.size() + " separate entitlement audits to load for this AuditTypeReference record # " + newAuditTypeReferenceID );
 		   		
 		   		// Finally, we can leverage the jEAUDIT library to mass-load these data into the database
-		   		AuditDataLoaderObject.massLoad(sheetDataHashMap, true, Main.mainDB);
+		   		AuditDataLoaderObjectUtil.massLoad(sheetDataHashMap, true, Main.mainDB);
 		   		
 		   		
 		   			

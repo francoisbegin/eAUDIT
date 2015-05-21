@@ -10,7 +10,9 @@ import java.util.Locale;
 
 import com.telus.sddi.jEAUDITlibrary.Audit;
 import com.telus.sddi.jEAUDITlibrary.AuditDataLoaderObject;
+import com.telus.sddi.jEAUDITlibrary.AuditDataLoaderObjectUtil;
 import com.telus.sddi.jEAUDITlibrary.AuditTypeReference;
+import com.telus.sddi.jEAUDITlibrary.AuditUtil;
 import com.telus.sddi.jEAUDITlibrary.Authorizers;
 import com.telus.sddi.jEAUDITlibrary.Entities;
 
@@ -118,7 +120,7 @@ public class Ops_AdapterDataLoad {
 		 */
 		
 		// Find the next idAudit
-		int auditRecordPointer = Audit.findMaxIDauditValue(Main.mainDB);
+		int auditRecordPointer = AuditUtil.findMaxIDauditValue(Main.mainDB);
 		System.out.println("We will insert new records inside the Audit table, starting at idAudit = " + ( auditRecordPointer + 1 ) );
 		
 		/*
@@ -247,7 +249,7 @@ public class Ops_AdapterDataLoad {
 		}
 		
 		// Finally, we make use of the AuditDataLoaderObject class and call the mass loader method
-		AuditDataLoaderObject.massLoad(auditDataLoaderObjectMap, true, Main.mainDB);
+		AuditDataLoaderObjectUtil.massLoad(auditDataLoaderObjectMap, true, Main.mainDB);
 		
 		
 	}
