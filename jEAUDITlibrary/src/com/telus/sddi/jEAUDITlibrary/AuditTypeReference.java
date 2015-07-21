@@ -8,11 +8,6 @@ import java.sql.Date;
 import com.telus.sddi.UnifiedToolBoxV2.DBConnector;
 
 
-/**
- * The Audit class, which maps to the AuditTypeReference table of the eAUDIT database
- * @author fbegin1
- *
- */
 public class AuditTypeReference {
 
 	private int 		idAuditTypeReference;
@@ -29,7 +24,7 @@ public class AuditTypeReference {
 	private Boolean		auditByManager;
 	private String 		dataLoadType;
 	private int 		eMACyclesTimelineID;
-	private Boolean		useEmac;
+	private String		entityTransferRule;
 	private Date 		createdDateTime;
 	private String 		createdBy;
 	private Date 		lastUpdatedDateTime;
@@ -37,7 +32,7 @@ public class AuditTypeReference {
 
 
 	/**
-	 * Full constructor
+	 * Full contructor
 	 * @param idAuditTypeReference
 	 * @param auditName
 	 * @param auditDescription
@@ -52,7 +47,7 @@ public class AuditTypeReference {
 	 * @param auditByManager
 	 * @param dataLoadType
 	 * @param eMACyclesTimelineID
-	 * @param useEmac
+	 * @param entityTransferRule
 	 * @param createdDateTime
 	 * @param createdBy
 	 * @param lastUpdatedDateTime
@@ -73,7 +68,7 @@ public class AuditTypeReference {
 			Boolean auditByManager,
 			String dataLoadType,
 			int eMACyclesTimelineID,
-			Boolean useEmac,
+			String entityTransferRule,
 			Date createdDateTime,
 			String createdBy,
 			Date lastUpdatedDateTime,
@@ -95,7 +90,7 @@ public class AuditTypeReference {
 		this.auditByManager = auditByManager;
 		this.dataLoadType = dataLoadType;
 		this.eMACyclesTimelineID = eMACyclesTimelineID;
-		this.useEmac = useEmac;
+		this.entityTransferRule = entityTransferRule;
 		this.createdDateTime = createdDateTime;
 		this.createdBy = createdBy;
 		this.lastUpdatedDateTime = lastUpdatedDateTime;
@@ -144,7 +139,7 @@ public class AuditTypeReference {
 			setAuditByManager(rs.getBoolean("AuditByManager"));
 			setDataLoadType(rs.getString("DataLoadType"));
 			seteMACyclesTimelineID(rs.getInt("eMACyclesTimelineID"));
-			setUseEmac(rs.getBoolean("UseEmac"));
+			setEntityTransferRule(rs.getString("EntityTransferRule"));
 			setCreatedDateTime(rs.getDate("CreatedDateTime"));
 			setCreatedBy(rs.getString("CreatedBy"));
 			setLastUpdatedDateTime(rs.getDate("LastUpdatedDateTime"));
@@ -166,7 +161,7 @@ public class AuditTypeReference {
 		DBConnector myDB = new DBConnector(databasePropertiesFile);
 		myDB.connect();
 		try {
-			myDB.query 			= "INSERT INTO AuditTypeReference (AuditName,AuditDescription,AuditStart,AuditEnd,AuditInstructionsEN,AuditInstructionsFR,UDEAprimaryFieldsEN,UDEAprimaryFieldsFR,UDEAsecondaryFieldsEN,UDEAsecondaryFieldsFR,AuditByManager,DataLoadType,eMACyclesTimelineID,UseEmac,CreatedDateTime,CreatedBy,LastUpdatedDateTime,LastUpdatedBy) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
+			myDB.query 			= "INSERT INTO AuditTypeReference (AuditName,AuditDescription,AuditStart,AuditEnd,AuditInstructionsEN,AuditInstructionsFR,UDEAprimaryFieldsEN,UDEAprimaryFieldsFR,UDEAsecondaryFieldsEN,UDEAsecondaryFieldsFR,AuditByManager,DataLoadType,eMACyclesTimelineID,EntityTransferRule,CreatedDateTime,CreatedBy,LastUpdatedDateTime,LastUpdatedBy) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
 			myDB.stmt 			= myDB.conn.prepareStatement(myDB.query, Statement.RETURN_GENERATED_KEYS );	
 			myDB.stmt.setString(1, getAuditName());
 			myDB.stmt.setString(2, getAuditDescription());
@@ -180,8 +175,8 @@ public class AuditTypeReference {
 			myDB.stmt.setString(10, getUDEAsecondaryFieldsFR());
 			myDB.stmt.setBoolean(11, getAuditByManager());
 			myDB.stmt.setString(12, getDataLoadType());
-			myDB.stmt.setInt(13, geteMACyclesTimelineID());
-			myDB.stmt.setBoolean(14, getUseEmac());
+			myDB.stmt.setInt(13, geteMACyclesTimelineID());	
+			myDB.stmt.setString(14, getEntityTransferRule());
 			myDB.stmt.setDate(15, getCreatedDateTime());
 			myDB.stmt.setString(16, getCreatedBy());
 			myDB.stmt.setDate(17, getLastUpdatedDateTime());
@@ -196,6 +191,7 @@ public class AuditTypeReference {
 		}
 		return key;
 	}
+
 
 
 	public int getidAuditTypeReference() {
@@ -282,12 +278,6 @@ public class AuditTypeReference {
 	public void seteMACyclesTimelineID(int eMACyclesTimelineID) {
 		this.eMACyclesTimelineID = eMACyclesTimelineID;
 	}
-	public Boolean getUseEmac() {
-		return useEmac;
-	}
-	public void setUseEmac(Boolean useEmac) {
-		this.useEmac = useEmac;
-	}
 	public Date getCreatedDateTime() {
 		return createdDateTime;
 	}
@@ -311,5 +301,13 @@ public class AuditTypeReference {
 	}
 	public void setLastUpdatedBy(String lastUpdatedBy) {
 		this.lastUpdatedBy = lastUpdatedBy;
+	}
+
+	public String getEntityTransferRule() {
+		return entityTransferRule;
+	}
+
+	public void setEntityTransferRule(String entityTransferRule) {
+		this.entityTransferRule = entityTransferRule;
 	}
 }

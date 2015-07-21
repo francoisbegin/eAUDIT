@@ -7,11 +7,7 @@ import java.sql.Date;
 
 import com.telus.sddi.UnifiedToolBoxV2.DBConnector;
 
-/**
- * The Audit class, which maps to the Authorizers table of the eAUDIT database
- * @author fbegin1
- *
- */
+
 public class Authorizers {
 
 	private int 		idAuthorizers;
@@ -19,11 +15,12 @@ public class Authorizers {
 	private int 		authorizerEmpID;
 	private String 		authorizerFirstName;
 	private String 		authorizerLastName;
+	private int 		authorizerManagerEmpID;
 	private Date 		createdDateTime;
 	private String 		createdBy;
 	private Date 		lastUpdatedDateTime;
 	private String 		lastUpdatedBy;
-	private int 		audit_idAudit;
+	private int 		entitlement_idEntitlement;
 
 
 	/**
@@ -33,12 +30,13 @@ public class Authorizers {
 	 * @param authorizerEmpID
 	 * @param authorizerFirstName
 	 * @param authorizerLastName
+	 * @param authorizerManagerEmpID
 	 * @param createdDateTime
 	 * @param createdBy
 	 * @param lastUpdatedDateTime
 	 * @param lastUpdatedBy
 	 * @param authorizersTypes_idAuthorizersTypes
-	 * @param audit_idAudit
+	 * @param entitlement_idEntitlement
 	 */
 	public Authorizers(
 			int idAuthorizers,
@@ -46,6 +44,7 @@ public class Authorizers {
 			int authorizerEmpID,
 			String authorizerFirstName,
 			String authorizerLastName,
+			int authorizerManagerEmpID,
 			Date createdDateTime,
 			String createdBy,
 			Date lastUpdatedDateTime,
@@ -59,11 +58,12 @@ public class Authorizers {
 		this.authorizerEmpID = authorizerEmpID;
 		this.authorizerFirstName = authorizerFirstName;
 		this.authorizerLastName = authorizerLastName;
+		this.authorizerManagerEmpID = authorizerManagerEmpID;
 		this.createdDateTime = createdDateTime;
 		this.createdBy = createdBy;
 		this.lastUpdatedDateTime = lastUpdatedDateTime;
 		this.lastUpdatedBy = lastUpdatedBy;
-		this.audit_idAudit = audit_idAudit;
+		this.entitlement_idEntitlement = audit_idAudit;
 
 	}
 
@@ -88,15 +88,17 @@ public class Authorizers {
 			setAuthorizerEmpID(rs.getInt("AuthorizerEmpID"));
 			setAuthorizerFirstName(rs.getString("AuthorizerFirstName"));
 			setAuthorizerLastName(rs.getString("AuthorizerLastName"));
+			setAuthorizerManagerEmpID(rs.getInt("AuthorizerManagerEmpID"));
 			setCreatedDateTime(rs.getDate("CreatedDateTime"));
 			setCreatedBy(rs.getString("CreatedBy"));
 			setLastUpdatedDateTime(rs.getDate("LastUpdatedDateTime"));
 			setLastUpdatedBy(rs.getString("LastUpdatedBy"));
-			setAudit_idAudit(rs.getInt("Audit_idAudit"));
+			setEntitlement_idEntitlement(rs.getInt("Entitlement_idEntitlement"));
 		} catch (SQLException e) {
 			System.out.println(e.toString());
 		}
 	}
+
 
 
 
@@ -110,17 +112,18 @@ public class Authorizers {
 		DBConnector myDB = new DBConnector(databasePropertiesFile);
 		myDB.connect();
 		try {
-			myDB.query 			= "INSERT INTO Authorizers (AuthorizerType,AuthorizerEmpID,AuthorizerFirstName,AuthorizerLastName,CreatedDateTime,CreatedBy,LastUpdatedDateTime,LastUpdatedBy,Audit_idAudit) VALUES (?,?,?,?,?,?,?,?,?);";
+			myDB.query 			= "INSERT INTO Authorizers (AuthorizerType,AuthorizerEmpID,AuthorizerFirstName,AuthorizerLastName,AuthorizerManagerEmpID,CreatedDateTime,CreatedBy,LastUpdatedDateTime,LastUpdatedBy,Entitlement_idEntitlement) VALUES (?,?,?,?,?,?,?,?,?,?);";
 			myDB.stmt 			= myDB.conn.prepareStatement(myDB.query, Statement.RETURN_GENERATED_KEYS );	
 			myDB.stmt.setString(1, getAuthorizerType());
 			myDB.stmt.setInt(2, getAuthorizerEmpID());
 			myDB.stmt.setString(3, getAuthorizerFirstName());
 			myDB.stmt.setString(4, getAuthorizerLastName());
-			myDB.stmt.setDate(5, getCreatedDateTime());
-			myDB.stmt.setString(6, getCreatedBy());
-			myDB.stmt.setDate(7, getLastUpdatedDateTime());
-			myDB.stmt.setString(8, getLastUpdatedBy());
-			myDB.stmt.setInt(9, getAudit_idAudit());
+			myDB.stmt.setInt(5, getAuthorizerManagerEmpID());
+			myDB.stmt.setDate(6, getCreatedDateTime());
+			myDB.stmt.setString(7, getCreatedBy());
+			myDB.stmt.setDate(8, getLastUpdatedDateTime());
+			myDB.stmt.setString(9, getLastUpdatedBy());
+			myDB.stmt.setInt(10, getEntitlement_idEntitlement());
 			myDB.stmt.executeUpdate();
 			ResultSet keys = myDB.stmt.getGeneratedKeys();
 			keys.next(); 
@@ -131,7 +134,6 @@ public class Authorizers {
 		}
 		return key;
 	}
-
 
 
 	public int getidAuthorizers() {
@@ -189,10 +191,36 @@ public class Authorizers {
 		this.lastUpdatedBy = lastUpdatedBy;
 	}
 
-	public int getAudit_idAudit() {
-		return audit_idAudit;
+	public int getEntitlement_idEntitlement() {
+		return entitlement_idEntitlement;
 	}
-	public void setAudit_idAudit(int audit_idAudit) {
-		this.audit_idAudit = audit_idAudit;
+	public void setEntitlement_idEntitlement(int audit_idAudit) {
+		this.entitlement_idEntitlement = audit_idAudit;
 	}
+
+	public void setIdAuthorizers(int idAuthorizers) {
+		this.idAuthorizers = idAuthorizers;
+	}
+
+	public int getAuthorizerManagerEmpID() {
+		return authorizerManagerEmpID;
+	}
+
+	public void setAuthorizerManagerEmpID(int authorizerManagerEmpID) {
+		this.authorizerManagerEmpID = authorizerManagerEmpID;
+	}
+	
+	public String getAuthorizerFullName() {
+		return authorizerFirstName + " " + authorizerLastName;
+	}
+	
+	public String getAuthorizerDetails() {
+		return "[" + authorizerEmpID + "] " + authorizerFirstName + " " + authorizerLastName;
+	}
+	
+	public String getAuthorizerFullDetails() {
+		return getAuthorizerDetails() + " (t:" + authorizerType + ", mgr:" + authorizerManagerEmpID + ")";
+	}
+	
+	
 }

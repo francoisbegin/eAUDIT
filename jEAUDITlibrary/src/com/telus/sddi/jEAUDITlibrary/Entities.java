@@ -8,11 +8,6 @@ import java.sql.Date;
 import com.telus.sddi.UnifiedToolBoxV2.DBConnector;
 
 
-/**
- * The Audit class, which maps to the Entities table of the eAUDIT database
- * @author fbegin1
- *
- */
 public class Entities {
 
 	private int 		idEntities;
@@ -23,7 +18,8 @@ public class Entities {
 	private String 		createdBy;
 	private Date 		lastUpdatedDateTime;
 	private String 		lastUpdatedBy;
-	private int 		audit_idAudit;
+	private int 		entitlement_idEntitlement;
+
 
 
 	/**
@@ -36,7 +32,7 @@ public class Entities {
 	 * @param createdBy
 	 * @param lastUpdatedDateTime
 	 * @param lastUpdatedBy
-	 * @param audit_idAudit
+	 * @param entitlement_idEntitlement
 	 */
 	public Entities(
 			int idEntities,
@@ -47,7 +43,7 @@ public class Entities {
 			String createdBy,
 			Date lastUpdatedDateTime,
 			String lastUpdatedBy,
-			int audit_idAudit) { 
+			int entitlement_idEntitlement) { 
 
 		super();
 
@@ -59,7 +55,7 @@ public class Entities {
 		this.createdBy = createdBy;
 		this.lastUpdatedDateTime = lastUpdatedDateTime;
 		this.lastUpdatedBy = lastUpdatedBy;
-		this.audit_idAudit = audit_idAudit;
+		this.entitlement_idEntitlement = entitlement_idEntitlement;
 
 	}
 
@@ -87,7 +83,7 @@ public class Entities {
 			setCreatedBy(rs.getString("CreatedBy"));
 			setLastUpdatedDateTime(rs.getDate("LastUpdatedDateTime"));
 			setLastUpdatedBy(rs.getString("LastUpdatedBy"));
-			setAudit_idAudit(rs.getInt("Audit_idAudit"));
+			setEntitlement_idEntitlement(rs.getInt("Entitlement_idEntitlement"));
 		} catch (SQLException e) {
 			System.out.println(e.toString());
 		}
@@ -104,7 +100,7 @@ public class Entities {
 		DBConnector myDB = new DBConnector(databasePropertiesFile);
 		myDB.connect();
 		try {
-			myDB.query 			= "INSERT INTO Entities (PrimaryKey,UDEAprimaryFieldsValues,UDEAsecondaryFieldsValues,CreatedDateTime,CreatedBy,LastUpdatedDateTime,LastUpdatedBy,Audit_idAudit) VALUES (?,?,?,?,?,?,?,?);";
+			myDB.query 			= "INSERT INTO Entities (PrimaryKey,UDEAprimaryFieldsValues,UDEAsecondaryFieldsValues,CreatedDateTime,CreatedBy,LastUpdatedDateTime,LastUpdatedBy,Entitlement_idEntitlement) VALUES (?,?,?,?,?,?,?,?);";
 			myDB.stmt 			= myDB.conn.prepareStatement(myDB.query, Statement.RETURN_GENERATED_KEYS );	
 			myDB.stmt.setString(1, getPrimaryKey());
 			myDB.stmt.setString(2, getUDEAprimaryFieldsValues());
@@ -113,7 +109,7 @@ public class Entities {
 			myDB.stmt.setString(5, getCreatedBy());
 			myDB.stmt.setDate(6, getLastUpdatedDateTime());
 			myDB.stmt.setString(7, getLastUpdatedBy());
-			myDB.stmt.setInt(8, getAudit_idAudit());
+			myDB.stmt.setInt(8, getEntitlement_idEntitlement());
 			myDB.stmt.executeUpdate();
 			ResultSet keys = myDB.stmt.getGeneratedKeys();
 			keys.next(); 
@@ -124,6 +120,42 @@ public class Entities {
 		}
 		return key;
 	}
+	
+	
+
+	/**
+	 * A method that updates a record. 
+	 */
+	public Boolean update(String databasePropertiesFile) {
+		
+		Boolean success = false;
+		
+		DBConnector myDB = new DBConnector(databasePropertiesFile);
+		try {
+			myDB.connect();
+			
+			myDB.query 		= "";		
+			myDB.query 		= "UPDATE Entities SET PrimaryKey=?, UDEAprimaryFieldsValues=?, UDEAsecondaryFieldsValues=?, LastUpdatedBy=?,Entitlement_idEntitlement=? WHERE idEntities = ?;";
+			
+			myDB.stmt 			= myDB.conn.prepareStatement(myDB.query);
+			
+			myDB.stmt.setString(1, getPrimaryKey() );
+			myDB.stmt.setString(2, getUDEAprimaryFieldsValues() );
+			myDB.stmt.setString(3, getUDEAsecondaryFieldsValues() );
+			myDB.stmt.setString(4, getLastUpdatedBy() );
+			myDB.stmt.setInt(5, getEntitlement_idEntitlement() );
+			myDB.stmt.setInt(6, getidEntities() );
+			myDB.stmt.executeUpdate();
+			myDB.close();
+			success = true;
+		} catch (Exception e) {
+			System.out.println(e.toString());
+		}
+	
+		return success;
+	}
+
+
 
 
 
@@ -175,10 +207,10 @@ public class Entities {
 	public void setLastUpdatedBy(String lastUpdatedBy) {
 		this.lastUpdatedBy = lastUpdatedBy;
 	}
-	public int getAudit_idAudit() {
-		return audit_idAudit;
+	public int getEntitlement_idEntitlement() {
+		return entitlement_idEntitlement;
 	}
-	public void setAudit_idAudit(int audit_idAudit) {
-		this.audit_idAudit = audit_idAudit;
+	public void setEntitlement_idEntitlement(int entitlement_idEntitlement) {
+		this.entitlement_idEntitlement = entitlement_idEntitlement;
 	}
 }

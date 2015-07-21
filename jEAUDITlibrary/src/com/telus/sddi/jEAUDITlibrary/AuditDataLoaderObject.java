@@ -2,61 +2,60 @@ package com.telus.sddi.jEAUDITlibrary;
 
 import java.util.ArrayList;
 
-import com.telus.sddi.jEAUDITlibrary.Audit;
+import com.telus.sddi.jEAUDITlibrary.Entitlement;
 import com.telus.sddi.jEAUDITlibrary.Authorizers;
 import com.telus.sddi.jEAUDITlibrary.Entities;
 
+
 /**
- * This class is a meta-object that is used to organize audit data prior to a data load. Using this class, you can funnel all of the
- * audit data into a generic class from where the data load can be done quickly and efficiently.
+ * This class is a meta-object that is used to organize entitlement data prior to a data load. Using this class, you can funnel all of the
+ * entitlement data into a generic class from where the data load can be done quickly and efficiently.
  * 
- * The Audit table is one of the key tables in the data model of eAUDIT since it is the table that links 
+ * The Entitlement table is one of the key tables in the data model of eAUDIT since it is the table that links 
  * 		Authorizers
  * 		AuditTypeReference 
  * 		Entities. 
  * 
- * One key field in class AuditDataLoaderObject is therefore idAuditID
+ * One key field in class AuditDataLoaderObject is therefore idEntitlementID
  * 
  * @author T805959
  *
  */
 public class AuditDataLoaderObject {
 
-	private int idAuditID;
+	private int idEntitlementID;
 	private int idAuditTypeReference;
-	private Audit audit;
+	private Entitlement entitlement;
 	private ArrayList<Authorizers> auditAuthorizers;
-	private ArrayList<Entities> auditEntities;
-
-	
+	private ArrayList<Entities> auditEntities;	
 	
 	
 	/**
 	 * The class main constructor
-	 * @param idAuditID
+	 * @param idEntitlementID
 	 * @param idAuditTypeReference
 	 * @param auditAuthorizers
 	 * @param auditEntities
 	 */
 	public AuditDataLoaderObject(
-			int idAuditID, 
+			int idEntitlementID, 
 			int idAuditTypeReference,
-			Audit audit,
+			Entitlement entitlement,
 			ArrayList<Authorizers> auditAuthorizers,
 			ArrayList<Entities> auditEntities) {
 		super();
-		this.idAuditID 				= idAuditID;
-		this.idAuditTypeReference 	= idAuditTypeReference;
-		this.setAudit(audit);
-		this.auditAuthorizers 		= auditAuthorizers;
-		this.auditEntities 			= auditEntities;
+		this.idEntitlementID 				= idEntitlementID;
+		this.idAuditTypeReference 			= idAuditTypeReference;
+		this.setEntitlement(entitlement);
+		this.auditAuthorizers 				= auditAuthorizers;
+		this.auditEntities 					= auditEntities;
 	}
 	
-	public int getIdAuditID() {
-		return idAuditID;
+	public int getIdEntitlementID() {
+		return idEntitlementID;
 	}
-	public void setIdAuditID(int idAuditID) {
-		this.idAuditID = idAuditID;
+	public void setIdEntitlementID(int idEntitlementID) {
+		this.idEntitlementID = idEntitlementID;
 	}
 	public ArrayList<Authorizers> getAuditAuthorizers() {
 		return auditAuthorizers;
@@ -79,12 +78,12 @@ public class AuditDataLoaderObject {
 		this.idAuditTypeReference = idAuditTypeReference;
 	}
 
-	public Audit getAudit() {
-		return audit;
+	public Entitlement getEntitlement() {
+		return entitlement;
 	}
 
-	public void setAudit(Audit audit) {
-		this.audit = audit;
+	public void setEntitlement(Entitlement entitlement) {
+		this.entitlement = entitlement;
 	}
 	
 }
