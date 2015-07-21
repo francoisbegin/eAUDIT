@@ -103,7 +103,7 @@ public class Ops_ExcelDataLoader {
         	 * 		one or more UDEAprimary 
         	 * 		one or more UDEAsecondary
         	 * This method will auto-adjust based on that first row so that the primary and secondary UDEA are organized and saved correctly. Note that the
-        	 * exact order in which these fields are presented must match the eact order in which the UDEAprimaryFieldsEN/FR and UDEAsecondaryFieldsFR where
+        	 * exact order in which these fields are presented must match the exact order in which the UDEAprimaryFieldsEN/FR and UDEAsecondaryFieldsFR where
         	 * defined in the AuditTypeRef sheet  
         	 */
         	if ( rowCounter == 1 ) {
@@ -172,6 +172,9 @@ public class Ops_ExcelDataLoader {
                     String cellContent = "";
                     
                     // We only deal with strings
+                	// We ensure that the fields are treated as string fields (even if they contain numbers)
+                	cell.setCellType(Cell.CELL_TYPE_STRING);
+                	
                     switch (cell.getCellType()) {
                     case Cell.CELL_TYPE_STRING:
                     	cellContent = cell.getStringCellValue();
