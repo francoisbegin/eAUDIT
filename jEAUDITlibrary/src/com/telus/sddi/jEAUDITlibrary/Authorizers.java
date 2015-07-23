@@ -49,7 +49,7 @@ public class Authorizers {
 			String createdBy,
 			Date lastUpdatedDateTime,
 			String lastUpdatedBy,
-			int audit_idAudit) { 
+			int entitlement_idEntitlement) { 
 
 		super();
 
@@ -63,7 +63,7 @@ public class Authorizers {
 		this.createdBy = createdBy;
 		this.lastUpdatedDateTime = lastUpdatedDateTime;
 		this.lastUpdatedBy = lastUpdatedBy;
-		this.entitlement_idEntitlement = audit_idAudit;
+		this.entitlement_idEntitlement = entitlement_idEntitlement;
 
 	}
 
@@ -194,8 +194,8 @@ public class Authorizers {
 	public int getEntitlement_idEntitlement() {
 		return entitlement_idEntitlement;
 	}
-	public void setEntitlement_idEntitlement(int audit_idAudit) {
-		this.entitlement_idEntitlement = audit_idAudit;
+	public void setEntitlement_idEntitlement(int entitlement_idEntitlement) {
+		this.entitlement_idEntitlement = entitlement_idEntitlement;
 	}
 
 	public void setIdAuthorizers(int idAuthorizers) {
