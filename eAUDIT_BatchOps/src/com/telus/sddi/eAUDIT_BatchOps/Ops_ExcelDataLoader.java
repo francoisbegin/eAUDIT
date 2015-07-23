@@ -167,7 +167,7 @@ public class Ops_ExcelDataLoader {
                 
                 /*
                  * This keeps track of the field position (first, second, etc.) in the sheet. It gets correlated to HashSets positionOfUDEAprimaryFields 
-                 * and positionOfUDEAsecondaryFields to determine if a value is a priary or secondary UDEA.
+                 * and positionOfUDEAsecondaryFields to determine if a value is a primary or secondary UDEA.
                  */
                 int fieldCounter = 1;
                 
@@ -253,7 +253,7 @@ public class Ops_ExcelDataLoader {
                 
                 // We have seen this entitlement/audit before
                 if ( entitlementToIDauditMap.containsKey(entitlement)) {
-                	// Known entitlement, we need to add that row to an ecisting HashMap
+                	// Known entitlement, we need to add that row to an existing HashMap
                 	int idEntitlement = entitlementToIDauditMap.get(entitlement);
                 	AuditDataLoaderObject existingAuditDataLoaderObject = auditDataLoaderObjectMap.get(idEntitlement);
                 	
@@ -367,16 +367,19 @@ public class Ops_ExcelDataLoader {
     								-1, 
     								"Prime", 
     								Parser.returnNumericValue((myAuthEmpID)), 
-    								"Need to look up the first name", 			//
-    								"Need to look up the last name", 			// See comments above on how to handle these
-    								-1, 										//
+    								"Need code to look up", 			//
+    								"Need code to look up", 			// See comments above on how to handle these
+    								-1, 								//
     								null, 
     								Main.toolName, 
     								null, 
     								Main.toolName, 
     								idEntitlementPointer);
-            				
+    						
+    						thisAuditAuthorizers.add(myNewAuthorizer);
+        
         				}
+    					
      				}
 
     				// We need to define the Entitlement record for the first time		
