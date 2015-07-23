@@ -8,13 +8,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 
-import com.telus.sddi.jEAUDITlibrary.Audit;
 import com.telus.sddi.jEAUDITlibrary.AuditDataLoaderObject;
-import com.telus.sddi.jEAUDITlibrary.AuditDataLoaderObjectUtil;
 import com.telus.sddi.jEAUDITlibrary.AuditTypeReference;
-import com.telus.sddi.jEAUDITlibrary.AuditUtil;
 import com.telus.sddi.jEAUDITlibrary.Authorizers;
 import com.telus.sddi.jEAUDITlibrary.Entities;
+import com.telus.sddi.jEAUDITlibrary.Entitlement;
+import com.telus.sddi.jEAUDITlibraryUtil.AuditDataLoaderObjectUtil;
+import com.telus.sddi.jEAUDITlibraryUtil.EntitlementUtil;
 
 public class Ops_AdapterDataLoad {
 	
@@ -94,8 +94,8 @@ public class Ops_AdapterDataLoad {
 				-1,
 				"Badges access levels at Main HQ", 
 				"Audit the 3 main access levels assigned to badges - Main HQ", 
-				castJavaUtilDateToJavaSQLdate(turnStringToDate("2015-04-01")), 
-				castJavaUtilDateToJavaSQLdate(turnStringToDate("2015-05-01")), 
+				castJavaUtilDateToJavaSQLdate(turnStringToDate("2015-07-01")), 
+				castJavaUtilDateToJavaSQLdate(turnStringToDate("2016-05-01")), 
 				"Audit instructions in English", 
 				"Audit instructions in French", 
 				"{\"badgeNumber\"},{\"badgeLabel\"},{\"badgeActivation\"}", 
@@ -105,7 +105,7 @@ public class Ops_AdapterDataLoad {
 				false, 
 				"Adapter-driven", 
 				0,
-				false, 
+				"no transfer",
 				null, 
 				"eAUDIT_BatchOps",
 				null, 
@@ -119,9 +119,9 @@ public class Ops_AdapterDataLoad {
 		 * Each entitlement corresponds to a specific Audit record.  It is important to note that the  i
 		 */
 		
-		// Find the next idAudit
-		int auditRecordPointer = AuditUtil.findMaxIDauditValue(Main.mainDB);
-		System.out.println("We will insert new records inside the Audit table, starting at idAudit = " + ( auditRecordPointer + 1 ) );
+		// Find the next idEntitlement
+		int entitlementRecordPointer = EntitlementUtil.findMaxIDentitlementValue(Main.mainDB);
+		System.out.println("We will insert new records inside the Audit table, starting at idAudit = " + ( entitlementRecordPointer + 1 ) );
 		
 		/*
 		 *  We could load Audit records then Entities, then Authorizers, but we can also use the jEAUDITlibray AuditDataLoaderObject.
@@ -142,8 +142,8 @@ public class Ops_AdapterDataLoad {
 			// Is this a new entitlement i.e. do we need the next available idAudit?
 			if ( ! entitlementToIDmap.containsKey(myCurrRecord.getEntitlement()) ) {
 				// Yes, we need a new idAudit
-				auditRecordPointer++;
-				entitlementToIDmap.put(myCurrRecord.getEntitlement(), auditRecordPointer);
+				entitlementRecordPointer++;
+				entitlementToIDmap.put(myCurrRecord.getEntitlement(), entitlementRecordPointer);
 				
 				// We turn this record into an Entity record and it is the first element of a new ArrayList of Entities records
 				Entities myNewEntity = new Entities(
@@ -155,7 +155,7 @@ public class Ops_AdapterDataLoad {
 						"eAUDIT_BatchOps", 
 						null, 
 						"eAUDIT_BatchOps", 
-						auditRecordPointer);
+						entitlementRecordPointer);
 				ArrayList<Entities> entitlememtEntitites = new ArrayList<Entities> ();
 				entitlememtEntitites.add(myNewEntity);
 				
@@ -169,13 +169,13 @@ public class Ops_AdapterDataLoad {
 				 */
 				ArrayList<Authorizers> entitlementAuthorizers = new ArrayList<Authorizers>(); 
 				if ( myCurrRecord.getEntitlement().equals("General Access") ) {
-					Authorizers authAlice = new Authorizers(-1, "Base", 801234, "Alice", "Fiorito", null, "eAUDIT_BatchOps", null, "eAUDIT_BatchOps", auditRecordPointer) ;
-					Authorizers authArlen = new Authorizers(-1, "Base", 825432, "Arlen", "Morey", null, "eAUDIT_BatchOps", null, "eAUDIT_BatchOps", auditRecordPointer) ;
+					Authorizers authAlice = new Authorizers(-1, "Base", 801234, "Alice", "Fiorito", -1, null, "eAUDIT_BatchOps", null, "eAUDIT_BatchOps", entitlementRecordPointer) ;
+					Authorizers authArlen = new Authorizers(-1, "Base", 825432, "Arlen", "Morey", -1, null, "eAUDIT_BatchOps", null, "eAUDIT_BatchOps", entitlementRecordPointer) ;
 					entitlementAuthorizers.add(authAlice);
 					entitlementAuthorizers.add(authArlen);
 				} else if ( myCurrRecord.getEntitlement().equals("Secure Access") ) {
-					Authorizers authReina = new Authorizers(-1, "Base", 830987, "Reina", "Malpass", null, "eAUDIT_BatchOps", null, "eAUDIT_BatchOps", auditRecordPointer) ;
-					Authorizers authMichaela = new Authorizers(-1, "Base", 805959, "Michaela", "Iniguez", null, "eAUDIT_BatchOps", null, "eAUDIT_BatchOps", auditRecordPointer) ;
+					Authorizers authReina = new Authorizers(-1, "Base", 830987, "Reina", "Malpass", -1, null, "eAUDIT_BatchOps", null, "eAUDIT_BatchOps", entitlementRecordPointer) ;
+					Authorizers authMichaela = new Authorizers(-1, "Base", 805959, "Michaela", "Iniguez", -1, null, "eAUDIT_BatchOps", null, "eAUDIT_BatchOps", entitlementRecordPointer) ;
 					entitlementAuthorizers.add(authReina);
 					entitlementAuthorizers.add(authMichaela);
 				/*
@@ -183,16 +183,15 @@ public class Ops_AdapterDataLoad {
 				 *  Two separate records end up being created: the Michaela who is an authorizer for Secure access and the one for Restricted access. 
 				 */
 				} else if ( myCurrRecord.getEntitlement().equals("Restricted Access") ) {
-					Authorizers authMichaela = new Authorizers(-1, "Base", 805959, "Michaela", "Iniguez", null, "eAUDIT_BatchOps", null, "eAUDIT_BatchOps", auditRecordPointer) ;
+					Authorizers authMichaela = new Authorizers(-1, "Base", 805959, "Michaela", "Iniguez", -1, null, "eAUDIT_BatchOps", null, "eAUDIT_BatchOps", entitlementRecordPointer) ;
 					entitlementAuthorizers.add(authMichaela);
 				}  
 				
-				// We build the Audit object
-				Audit newAuditRecord = new Audit(
-						auditRecordPointer, 
+				// We build the Entitlement object
+				Entitlement newAuditRecord = new Entitlement(
+						entitlementRecordPointer, 
 						1, 
 						myCurrRecord.getEntitlement(),
-						"internal user field",
 						null, 
 						Main.toolName, 
 						null, 
@@ -201,14 +200,14 @@ public class Ops_AdapterDataLoad {
 				
 				// We create the first AuditDataLoaderObject for this new entitlement/audit				
 				AuditDataLoaderObject myNewAuditLoaderObject = new AuditDataLoaderObject(
-						auditRecordPointer, 
+						entitlementRecordPointer, 
 						newAuditTypeReferenceRecordID, 
 						newAuditRecord, 
 						entitlementAuthorizers, 
 						entitlememtEntitites);
 				
 				//We add this to the HashMap
-				auditDataLoaderObjectMap.put(auditRecordPointer, myNewAuditLoaderObject);
+				auditDataLoaderObjectMap.put(entitlementRecordPointer, myNewAuditLoaderObject);
 				
 				System.out.println(" Created [ " + myCurrRecord.getEntitlement() + " ] and inserted first record: " + myNewEntity.getUDEAprimaryFieldsValues()); 
 				
@@ -231,13 +230,13 @@ public class Ops_AdapterDataLoad {
 						"eAUDIT_BatchOps", 
 						null, 
 						"eAUDIT_BatchOps", 
-						auditRecordPointer);
+						entitlementRecordPointer);
 
 				existingAuditEntities.add(myNewEntity);
 				
 				// We increment Audit.TotalNumberOfEntities by 1
-				Audit auditRecord = existingAuditDataLoaderObject.getAudit();
-				auditRecord.setTotalNumberOfEntities(auditRecord.getTotalNumberOfEntities() + 1);
+				Entitlement entitlementRecord = existingAuditDataLoaderObject.getEntitlement();
+				entitlementRecord.setTotalNumberOfEntities(entitlementRecord.getTotalNumberOfEntities() + 1);
 				
 				// And put it back into the HashMap 
 				auditDataLoaderObjectMap.put(idAudit, existingAuditDataLoaderObject);
@@ -249,7 +248,7 @@ public class Ops_AdapterDataLoad {
 		}
 		
 		// Finally, we make use of the AuditDataLoaderObject class and call the mass loader method
-		AuditDataLoaderObjectUtil.massLoad(auditDataLoaderObjectMap, true, Main.mainDB);
+		AuditDataLoaderObjectUtil.bulkCreate(auditDataLoaderObjectMap, true, Main.mainDB);
 		
 		
 	}

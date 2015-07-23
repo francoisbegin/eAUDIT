@@ -15,35 +15,45 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import com.telus.sddi.jEAUDITlibrary.Audit;
+import com.telus.sddi.UnifiedToolBoxV2.Parser;
 import com.telus.sddi.jEAUDITlibrary.AuditDataLoaderObject;
-import com.telus.sddi.jEAUDITlibrary.AuditDataLoaderObjectUtil;
 import com.telus.sddi.jEAUDITlibrary.AuditTypeReference;
-import com.telus.sddi.jEAUDITlibrary.AuditUtil;
 import com.telus.sddi.jEAUDITlibrary.Authorizers;
 import com.telus.sddi.jEAUDITlibrary.Entities;
+import com.telus.sddi.jEAUDITlibrary.Entitlement;
+import com.telus.sddi.jEAUDITlibraryUtil.AuditDataLoaderObjectUtil;
+import com.telus.sddi.jEAUDITlibraryUtil.AuditTypeReferenceUtil;
+import com.telus.sddi.jEAUDITlibraryUtil.EntitlementUtil;
+
 
 public class Ops_ExcelDataLoader {
-
 	
+	
+
 	/**
 	 * Method that turns an ArrayList of Strings into a JSON
 	 * @param myArrayListOfString
 	 * @return
 	 */
 	private static String turnArrayListToJSON (ArrayList<String> myArrayListOfString) {
-		String returnedJSON = "{";
 		
-		for ( String myStringInArray : myArrayListOfString ) {
-			returnedJSON += "\"" + myStringInArray + "\",";
+		String returnedJSON = "";
+		
+		if ( myArrayListOfString.size() > 0 ) {
+			returnedJSON = "{";
+			
+			for ( String myStringInArray : myArrayListOfString ) {
+				returnedJSON += "\"" + myStringInArray + "\",";
+			}
+			
+			returnedJSON = returnedJSON.substring(0,returnedJSON.length()-1);
+			returnedJSON += "}";
+		} else {
+			returnedJSON = "{}";
 		}
-		
-		returnedJSON = returnedJSON.substring(0,returnedJSON.length()-1);
-		returnedJSON += "}";
-		
+				
 		return returnedJSON;
 	}
-	
 	
 	
 	/**
@@ -55,6 +65,10 @@ public class Ops_ExcelDataLoader {
 	 */
 	@SuppressWarnings("unused")
 	private static HashMap<Integer, AuditDataLoaderObject> translateAuditDataRecordsFromExcelSheetToHashMap(XSSFSheet sheet, int newAuditTypeReferenceID) {
+		
+		// Get all details about the new AuditTypeReference record
+		AuditTypeReference newAuditTypeReference = AuditTypeReferenceUtil.get(newAuditTypeReferenceID, Main.mainDB);
+			
 		//Get iterator to all the rows in current sheet
 		Iterator<Row> rowIterator = sheet.iterator();
 
@@ -73,18 +87,20 @@ public class Ops_ExcelDataLoader {
 		int numOfUDEAsecondaryHeadersFound	= 0;
 		
 		 /*
-         * This map will hold all of the data from AuditData into a HashMap. It is important to remember here that all entries inside the Audit table are 
-         * sub-audits of the larger AuditTypeReference record. Therefore the index of the HashMap will be idAudit, which will need to be reserved and selected
-         * prior to the data load. Once the HashMap has been created, loading the data will be very easy.  
+         * This map will hold all of the data from AuditData into a HashMap. It is important to remember here that all entries inside the Entitlement table are 
+         * sub-audits of the larger AuditTypeReference record. Therefore the index of the HashMap will be idEntitlement, which will need to be reserved and selected
+         * prior to the data load. Once the HashMap has been created, loading the data will be very easy. 
+         * 
+         * This map's index is idEntitlement as the Entitlement table is the one all others revolve around
          */
 		HashMap<Integer, AuditDataLoaderObject> auditDataLoaderObjectMap = new HashMap<Integer, AuditDataLoaderObject>();
 		
-		// Where need to know where to start inserting records in the Audit table i.e. the next available value for idAudit
-		int idAuditPointer = AuditUtil.findMaxIDauditValue(Main.mainDB);
-		idAuditPointer++;
+		// Where need to know where to start inserting records in the Entitlement table i.e. the next available value for idEntitlement
+		int idEntitlementPointer = EntitlementUtil.findMaxIDentitlementValue(Main.mainDB);
+		idEntitlementPointer++;
 		
 		/*
-		 * All unique entitlements represent a sub-audit of the AuditTypeReference, so we keep a map of entitlements & idAudit to help create auditDataLoaderObjectMap 
+		 * All unique entitlements represent a sub-audit of the AuditTypeReference, so we keep a map of entitlements & idEntitlement to help create auditDataLoaderObjectMap 
 		 */
 		HashMap<String, Integer> entitlementToIDauditMap = new HashMap<String, Integer>(); 
 		
@@ -92,8 +108,6 @@ public class Ops_ExcelDataLoader {
 		// Traverse over each row of XLSX file
         while (rowIterator.hasNext()) {
         	Row row = rowIterator.next();
-        	
-        	//System.out.println("Processing row " + rowCounter);
         	
         	/**
         	 * This first row has the field headers. We expect to find
@@ -103,7 +117,7 @@ public class Ops_ExcelDataLoader {
         	 * 		one or more UDEAprimary 
         	 * 		one or more UDEAsecondary
         	 * This method will auto-adjust based on that first row so that the primary and secondary UDEA are organized and saved correctly. Note that the
-        	 * exact order in which these fields are presented must match the exact order in which the UDEAprimaryFieldsEN/FR and UDEAsecondaryFieldsFR where
+        	 * exact order in which these fields are presented must match the eact order in which the UDEAprimaryFieldsEN/FR and UDEAsecondaryFieldsFR where
         	 * defined in the AuditTypeRef sheet  
         	 */
         	if ( rowCounter == 1 ) {
@@ -115,24 +129,21 @@ public class Ops_ExcelDataLoader {
                 while (cellIterator.hasNext()) {
                 	
                     Cell cell = cellIterator.next();
-
-                    switch (cell.getCellType()) {
-                    case Cell.CELL_TYPE_STRING:
-                    	if ( cell.getStringCellValue().equals("PrimaryKey")) {
-                    		primaryKeyHeaderFound 	= true;
-                    	} else if ( cell.getStringCellValue().equals("Authorizers")) {
-                    		authorizersHeaderFound 	= true;
-                    	} else if ( cell.getStringCellValue().equals("UDEAprimary")) {
-                    		numOfUDEAprimaryHeadersFound++;
-                    		positionOfUDEAprimaryFields.add(fieldCounter);
-                    	} else if ( cell.getStringCellValue().equals("UDEAsecondary")) {
-                    		numOfUDEAsecondaryHeadersFound++;
-                    		positionOfUDEAsecondaryFields.add(fieldCounter);
-                    	} 
-                        break;
-                    default :
-                 
-                    }
+                       
+                    // Ensure that the cell is considered as a STRING. It will be converted to numeric/boolean as required
+                    cell.setCellType(Cell.CELL_TYPE_STRING);
+                   
+                   	if ( cell.getStringCellValue().equals("PrimaryKey")) {
+                   		primaryKeyHeaderFound 	= true;
+                   	} else if ( cell.getStringCellValue().equals("Authorizers")) {
+                   		authorizersHeaderFound 	= true;
+                   	} else if ( cell.getStringCellValue().equals("UDEAprimary")) {
+                   		numOfUDEAprimaryHeadersFound++;
+                   		positionOfUDEAprimaryFields.add(fieldCounter);
+                   	} else if ( cell.getStringCellValue().equals("UDEAsecondary")) {
+                   		numOfUDEAsecondaryHeadersFound++;
+                   		positionOfUDEAsecondaryFields.add(fieldCounter);
+                   	} 
                     
                     fieldCounter++;
                
@@ -169,31 +180,48 @@ public class Ops_ExcelDataLoader {
                 	
                     Cell cell = cellIterator.next();
                     
-                    String cellContent = "";
+                    // Ensure that the cell is considered as a STRING. It will be converted to numeric/boolean as required
+                    cell.setCellType(Cell.CELL_TYPE_STRING);
                     
-                    // We only deal with strings
-                	// We ensure that the fields are treated as string fields (even if they contain numbers)
-                	cell.setCellType(Cell.CELL_TYPE_STRING);
-                	
-                    switch (cell.getCellType()) {
-                    case Cell.CELL_TYPE_STRING:
-                    	cellContent = cell.getStringCellValue();
-                    	break;
-                    case Cell.CELL_TYPE_BLANK:
-                    	//
-                    	break;
-                    case Cell.CELL_TYPE_BOOLEAN:
-                    	//
-                    	break;
-                    case Cell.CELL_TYPE_NUMERIC:
-                    	cellContent = Double.toString(cell.getNumericCellValue());
-                    	break;
-                    }
-                                      
+                    String cellContent = cell.getStringCellValue();
+                                                         
                     if ( fieldCounter == 1 ) {
                     	primaryKey = cellContent;
                     } else if ( fieldCounter == 2 ) {
-                    	entitlement = cellContent;
+                    	
+        				/*
+        				 * There are 2 distinct cases here:
+        				 * 
+        				 *    1. AuditTypeReference.AuditByManager = FALSE
+        				 *    		We expect the spreadsheet to clearly provide entitlement names under the Entitlement column.
+        				 *    2. AuditTypeReference.AuditByManager = TRUE
+        				 *    		We expect the spreadsheet to clearly provide entitlement names under the Entitlement column BUT entitlements are manager specific. In other
+        				 *          words, if the entitlement is 'Is a user of System A', then this needs to be changed to 'Is a user of system A reporting to [EmpID of mgr]'
+        				 *          
+                    	 * IMPORTANT NOTE:
+                    	 * The code to handle audits by managers is not provided here as each enterprise has its own repository of hierarchical data. With that said, it
+                    	 * should be trivial to implement this by
+                    	 * 			Obtaining a HashMap of employee IDs-to-managerID from an authoritative source
+                    	 * 			Looking up the primaryKey field in that map
+                    	 * 			Updating the entitlement field accordingly
+                    	 * 
+                    	 * Here is some code for this
+                    	 * 
+                    	 *  if ( newAuditTypeReference.getAuditByManager() ) {
+         						int authorizerEmpID			= 0;
+    							if ( myCEDv2ReferenceMap.containsKey(Integer.parseInt(primaryKey) )) {
+    								authorizerEmpID 	= Parser.returnNumericValue(myCEDv2ReferenceMap.get(Integer.parseInt(primaryKey)).getManagerPersonnelNumber());
+    							}
+    							entitlement = cellContent + " reporting to ["+authorizerEmpID+"]";
+         					} else {
+         						entitlement = cellContent;	
+         					}
+                    	 * 
+                    	 */
+
+                    	// This is the default if you do not check for audits where AuditByManager = TRUE
+         				entitlement = cellContent;	
+ 	
                     } else if ( fieldCounter == 3 ) {
                     	String[] authorizersStringArr = cellContent.split(";");
                     	for ( String myAuth : authorizersStringArr) {
@@ -225,63 +253,137 @@ public class Ops_ExcelDataLoader {
                 
                 // We have seen this entitlement/audit before
                 if ( entitlementToIDauditMap.containsKey(entitlement)) {
-                	// Known entitlement, we need to add that row to an existing HashMap
-                	int idAudit = entitlementToIDauditMap.get(entitlement);
-                	AuditDataLoaderObject existingAuditDataLoaderObject = auditDataLoaderObjectMap.get(idAudit);
+                	// Known entitlement, we need to add that row to an ecisting HashMap
+                	int idEntitlement = entitlementToIDauditMap.get(entitlement);
+                	AuditDataLoaderObject existingAuditDataLoaderObject = auditDataLoaderObjectMap.get(idEntitlement);
                 	
     				// The records gets appended to entities
     				ArrayList<Entities> existingAuditEntities = existingAuditDataLoaderObject.getAuditEntities();
-    				myRowRecordTranslatedIntoAnEntity.setAudit_idAudit(idAudit);
+    				myRowRecordTranslatedIntoAnEntity.setEntitlement_idEntitlement(idEntitlement);
     				existingAuditEntities.add(myRowRecordTranslatedIntoAnEntity);
     				
     				// We need to increment the Audit.TotalNumberOfEntities by 1
-    				Audit auditRecord = existingAuditDataLoaderObject.getAudit();
-    				auditRecord.setTotalNumberOfEntities(auditRecord.getTotalNumberOfEntities() + 1);
+    				Entitlement entitlementRecord = existingAuditDataLoaderObject.getEntitlement();
+    				entitlementRecord.setTotalNumberOfEntities(entitlementRecord.getTotalNumberOfEntities() + 1);
     				
     				// And put it back into the HashMap 
-    				auditDataLoaderObjectMap.put(idAudit, existingAuditDataLoaderObject);         	
+    				auditDataLoaderObjectMap.put(idEntitlement, existingAuditDataLoaderObject);         	
 
     			// First time we see this object, we need to create it
                 } else {
                 	
-    				// Update the idAuditPointer as this is a new Audit record
-    				idAuditPointer++;
+    				// Update the idEntitlementPointer as this is a new Audit record
+    				idEntitlementPointer++;
     				
-    				// Add to entitlement-to-idAudit map
-    				entitlementToIDauditMap.put(entitlement, idAuditPointer);
+    				// Add to entitlement-to-idEntitlement map
+    				entitlementToIDauditMap.put(entitlement, idEntitlementPointer);
     				
     				// Create new ArrayList of Authorizers and add this manager
     				ArrayList<Authorizers> thisAuditAuthorizers = new ArrayList<Authorizers>();
     				
+    				
     				/*
-    				 * To get a complete Authorizer record, you would need to work slightly harder here and come up with a mechanism to look up an
-    				 * authorizer's details (first name and last name) in an authoritative data source. For this particular code, we just get
-    				 * the employee IDs in AUthorizers
+    				 * There are 2 distinct cases here:
+    				 * 
+    				 *    1. AuditTypeReference.AuditByManager = FALSE
+    				 *    		We expect the spreadsheet to provide one or more Authorizers under the Authorizer column of the AuditData sheet.
+    				 *    		These values are expected to be employee IDs of authorizers, which will need to be matched to names (below)
+    				 *    2. AuditTypeReference.AuditByManager = TRUE
+    				 *    		We do not expect any Authorizers from the spreadsheet. The PrimaryKey of each entity record is the employee ID and we
+    				 *          look up the employee manager, and take this person the de facto Authorizer for the entity 
+    				 *          
+    				 *          
+    				 * IMPORTANT NOTE:
+                     * The code to handle looking up managers details or simply their names is not provided here as each enterprise has its own repository 
+                     * of hierarchical data. With that said, it should be trivial to implement this by
+                     * 			Obtaining a HashMap of employee IDs-to-manager details from an authoritative source
+                     * 			Looking up the primaryKey field in that map
+                     * 			Updating the authorizers ArrayList accordingly
+                     * 
+                     * Here is some code for this
+                      
+                       if ( ! newAuditTypeReference.getAuditByManager() ) {
+    				 		for ( String myAuthEmpID : authorizersArray ) {
+    				 			String authorizerFirstName 	= "Not in hierarchy";
+					 			String authorizerLastName 	= "UNKNOWN";
+					 			int authorizerManagerEmpID	= 0;
+					 			
+					 			if ( myEmployeeToManagerMAP.containsKey(Parser.returnNumericValue(myAuthEmpID) )) {
+					 				authorizerFirstName 	= myEmployeeToManagerMAP.get(Parser.returnNumericValue(myAuthEmpID)).getPreferredFirstName();
+					 				authorizerLastName 		= myEmployeeToManagerMAP.get(Parser.returnNumericValue(myAuthEmpID)).getLastName();
+					 				authorizerManagerEmpID	= Parser.returnNumericValue(myEmployeeToManagerMAP.get(Parser.returnNumericValue(myAuthEmpID)).getManagerPersonnelNumber());
+					 			}
+					 			Authorizers myNewAuthorizer = new Authorizers(
+									-1, 
+									"Prime", 
+									Parser.returnNumericValue((myAuthEmpID)), 
+									authorizerFirstName, 
+									authorizerLastName, 
+									authorizerManagerEmpID, 
+									null, 
+									Main.toolName, 
+									null, 
+									Main.toolName, 
+									idEntitlementPointer);
+
+    				 			thisAuditAuthorizers.add(myNewAuthorizer);	
+        			 		}
+    				 	} else {
+    				 		String authorizerFirstName 	= "Not in hierarchy";
+					 		String authorizerLastName 	= "UNKNOWN";
+					 		String myAuthEmpID			= "0";
+					 		
+					 		if ( myEmployeeToManagerMAP.containsKey(  Parser.returnNumericValue(primaryKey))  ) {
+					 				authorizerFirstName 	= myEmployeeToManagerMAP.get(Parser.returnNumericValue(primaryKey)).getPreferredFirstName();
+					 				authorizerLastName 		= myEmployeeToManagerMAP.get(Parser.returnNumericValue(primaryKey)).getLastName();
+					 				authorizerManagerEmpID	= Parser.returnNumericValue(myEmployeeToManagerMAP.get(Parser.returnNumericValue(primaryKey)).getManagerPersonnelNumber());
+					 		}
+					 			Authorizers myNewAuthorizer = new Authorizers(
+									-1, 
+									"Prime", 
+									Parser.returnNumericValue((primaryKey)), 
+									authorizerFirstName, 
+									authorizerLastName, 
+									authorizerManagerEmpID, 
+									null, 
+									Main.toolName, 
+									null, 
+									Main.toolName, 
+									idEntitlementPointer);
+
+    				 			thisAuditAuthorizers.add(myNewAuthorizer);	
+    				 	}
+                             
     				 */
-  				
-    				for ( String myAuthEmpID : authorizersArray ) {
-    					Authorizers myNewAuthorizer = new Authorizers(
-    							-1, 
-    							"Base", 
-    							Integer.parseInt(myAuthEmpID), 
-    							"Need to look auth first name up", 
-    							"Need to look auth last name up", 
-    							null, 
-    							Main.toolName, 
-    							null, 
-    							Main.toolName, 
-    							idAuditPointer);
+    				
+    				
+    				/*
+    				 *  This is just the default implemented here for demonstration purposes
+    				 */
+    				
+     				if ( ! newAuditTypeReference.getAuditByManager() ) {
+    					for ( String myAuthEmpID : authorizersArray ) {
+    						Authorizers myNewAuthorizer = new Authorizers(
+    								-1, 
+    								"Prime", 
+    								Parser.returnNumericValue((myAuthEmpID)), 
+    								"Need to look up the first name", 			//
+    								"Need to look up the last name", 			// See comments above on how to handle these
+    								-1, 										//
+    								null, 
+    								Main.toolName, 
+    								null, 
+    								Main.toolName, 
+    								idEntitlementPointer);
+            				
+        				}
+     				}
 
-        				thisAuditAuthorizers.add(myNewAuthorizer);
-    					
-    				}
-
-    				// We need to define the Audit record for the first time		
-    				Audit entitlementAuditRecord = new Audit(
-    						idAuditPointer, 
+    				// We need to define the Entitlement record for the first time		
+    				Entitlement entitlementAuditRecord = new Entitlement(
+    						idEntitlementPointer, 
     						1, 
     						entitlement, 
-    						"internal user field",
     						null, 
     						Main.toolName, 
     						null, 
@@ -290,19 +392,19 @@ public class Ops_ExcelDataLoader {
     				
     				// This current row record is the first entity for this audit
     				ArrayList<Entities> newListOfEntities = new ArrayList<Entities>(); 
-    				myRowRecordTranslatedIntoAnEntity.setAudit_idAudit(idAuditPointer);
+    				myRowRecordTranslatedIntoAnEntity.setEntitlement_idEntitlement(idEntitlementPointer);
     				newListOfEntities.add(myRowRecordTranslatedIntoAnEntity);
     				
     				// Create new AuditDataLoaderObject
     				AuditDataLoaderObject newAuditDataLoaderObject = new AuditDataLoaderObject(
-    						idAuditPointer, 
+    						idEntitlementPointer, 
     						newAuditTypeReferenceID, 
     						entitlementAuditRecord,
     						thisAuditAuthorizers, 
     						newListOfEntities);
     				
     				// And put it into the HashMap 
-    				auditDataLoaderObjectMap.put(idAuditPointer, newAuditDataLoaderObject);		                	
+    				auditDataLoaderObjectMap.put(idEntitlementPointer, newAuditDataLoaderObject);		                	
                           	
                 }
            
@@ -324,27 +426,13 @@ public class Ops_ExcelDataLoader {
 		
 		int newAuditTypeReferenceID = -1;
 				
-		// These are the values we are looking for
-		String auditName 				= null;
-		String auditDescription 		= null;
-		String auditInstructionsEN 		= null;
-		String auditInstructionsFR 		= null;
-		String uDEAprimaryFieldsEN 		= null;
-		String uDEAprimaryFieldsFR 		= null;
-		String uDEAsecondaryFieldsEN 	= null;
-		String uDEAsecondaryFieldsFR 	= null;
-		Date auditStart 				= null;
-		Date auditEnd 					= null;
-		Boolean auditByManager 			= null;
-		String dataLoadType 			= null;
-		int eMACyclesTimelineID			= 0;
-		Boolean useEmac					= null;
-		String auditManager 			= null;
-	
 		//Get iterator to all the rows in current sheet
 		Iterator<Row> rowIterator = sheet.iterator();
 
 		int checkCounter = 0;
+		
+		//This holds the new AuditTypeReference recors, which we construct as we iterate through the field from the template
+		AuditTypeReference myNewAuditReferenceRecord = new AuditTypeReference();
 		
         // Traversing over each row of XLSX file
         while (rowIterator.hasNext()) {
@@ -355,67 +443,109 @@ public class Ops_ExcelDataLoader {
             while (cellIterator.hasNext()) {
 
                 Cell cell = cellIterator.next();
-
-                switch (cell.getCellType()) {
-                case Cell.CELL_TYPE_STRING:
-                	if ( cell.getStringCellValue().equals("AuditName")) {
-                		auditName					= cellIterator.next().toString();
-                		checkCounter++;
-                	} else if ( cell.getStringCellValue().equals("AuditDescription")) {
-                		auditDescription			= cellIterator.next().toString();
-                		checkCounter++;
-                	} else if ( cell.getStringCellValue().equals("AuditInstructionsEN")) {
-                		auditInstructionsEN			= cellIterator.next().toString();
-                		checkCounter++;
-                	} else if ( cell.getStringCellValue().equals("AuditInstructionsFR")) {
-                		auditInstructionsFR			= cellIterator.next().toString();
-                		checkCounter++;
-                	} else if ( cell.getStringCellValue().equals("UDEAprimaryFieldsEN")) {
-                		uDEAprimaryFieldsEN			= cellIterator.next().toString();
-                		checkCounter++;
-                	} else if ( cell.getStringCellValue().equals("UDEAprimaryFieldsFR")) {
-                		uDEAprimaryFieldsFR			= cellIterator.next().toString();
-                		checkCounter++;
-                	} else if ( cell.getStringCellValue().equals("UDEAsecondaryFieldsEN")) {
-                		uDEAsecondaryFieldsEN		= cellIterator.next().toString();
-                		checkCounter++;
-                	} else if ( cell.getStringCellValue().equals("UDEAsecondaryFieldsFR")) {
-                		uDEAsecondaryFieldsFR		= cellIterator.next().toString();
-                		checkCounter++;
-                	} else if ( cell.getStringCellValue().equals("AuditStart")) {
-                		auditStart					= (Date) cellIterator.next().getDateCellValue();
-                		checkCounter++;
-                	} else if ( cell.getStringCellValue().equals("AuditEnd")) {
-                		auditEnd					= (Date) cellIterator.next().getDateCellValue();
-                		checkCounter++;
-                	} else if ( cell.getStringCellValue().equals("AuditByManager")) {
-                		if ( cellIterator.next().getNumericCellValue() == 1 ) {
-                			auditByManager = true;
-                		} else {
-                		    auditByManager = false;
-                		}
-                		checkCounter++;
-                	} else if ( cell.getStringCellValue().equals("DataLoadType")) {
-                		dataLoadType				= cellIterator.next().toString();
-                		checkCounter++;
-                	} else if ( cell.getStringCellValue().equals("eMACCyclesTimelineID")) {
-                		eMACyclesTimelineID			= (int) cellIterator.next().getNumericCellValue();
-                		checkCounter++;
-                	} else if ( cell.getStringCellValue().equals("UseEMAC")) {
-                		if ( cellIterator.next().getNumericCellValue() == 1 ) {
-                			useEmac = true;
-                		} else {
-                			useEmac = false;
-                		}
-                		checkCounter++;
-                	}  else if ( cell.getStringCellValue().equals("AuditManager")) {
-                		auditManager				= cellIterator.next().toString();
-                		checkCounter++;
-                	}    
-                    break;
-                default :
-             
+                
+                // Ensure that the cell is considered as a STRING. It will be converted to numeric/boolean as required
+                cell.setCellType(Cell.CELL_TYPE_STRING);
+                
+                //System.out.println(cell.getStringCellValue());
+                
+                switch(cell.getStringCellValue()) {
+				case "AuditName":
+					myNewAuditReferenceRecord.setAuditName(cellIterator.next().toString());
+               		checkCounter++;
+               		if (Main.verbose) System.out.println(" ---> AuditName = " + myNewAuditReferenceRecord.getAuditName());
+					break;
+				case "AuditDescription":
+					myNewAuditReferenceRecord.setAuditDescription(cellIterator.next().toString());
+					if (Main.verbose) System.out.println(" ---> AuditDescription = "+ myNewAuditReferenceRecord.getAuditDescription());
+               		checkCounter++;
+               		break;
+				case "AuditInstructionsEN":
+					myNewAuditReferenceRecord.setAuditInstructionsEN(cellIterator.next().toString());
+               		checkCounter++;
+               		if (Main.verbose) System.out.println(" ---> AuditInstructionsEN = "+ myNewAuditReferenceRecord.getAuditInstructionsEN());
+					break;	
+				case "AuditInstructionsFR":
+					myNewAuditReferenceRecord.setAuditInstructionsFR(cellIterator.next().toString());
+               		checkCounter++;
+               		if (Main.verbose) System.out.println(" ---> AuditInstructionsFR = "+ myNewAuditReferenceRecord.getAuditInstructionsFR());
+					break;	
+				case "UDEAprimaryFieldsEN":
+					myNewAuditReferenceRecord.setUDEAprimaryFieldsEN(cellIterator.next().toString());
+               		checkCounter++;
+               		if (Main.verbose) System.out.println(" ---> UDEAprimaryFieldsEN = "+ myNewAuditReferenceRecord.getUDEAprimaryFieldsEN());
+					break;	
+				case "UDEAprimaryFieldsFR":
+					myNewAuditReferenceRecord.setUDEAprimaryFieldsFR(cellIterator.next().toString());
+               		checkCounter++;
+               		if (Main.verbose) System.out.println(" ---> UDEAprimaryFieldsFR = "+ myNewAuditReferenceRecord.getUDEAprimaryFieldsFR());
+					break;	
+				case "UDEAsecondaryFieldsEN":
+					myNewAuditReferenceRecord.setUDEAsecondaryFieldsEN(cellIterator.next().toString());
+               		checkCounter++;
+               		if (Main.verbose) System.out.println(" ---> UDEAsecondaryFieldsEN = "+ myNewAuditReferenceRecord.getUDEAsecondaryFieldsEN());
+					break;	
+				case "UDEAsecondaryFieldsFR":
+					myNewAuditReferenceRecord.setUDEAsecondaryFieldsFR(cellIterator.next().toString());
+               		checkCounter++;
+               		if (Main.verbose) System.out.println(" ---> UDEAsecondaryFieldsFR = "+ myNewAuditReferenceRecord.getUDEAsecondaryFieldsFR());
+					break;	
+				case "AuditStart":
+					myNewAuditReferenceRecord.setAuditStart( castJavaUtilDateToJavaSQLdate((Date) cellIterator.next().getDateCellValue() ));
+               		checkCounter++;
+               		if (Main.verbose) System.out.println(" ---> AuditStart = "+ myNewAuditReferenceRecord.getAuditStart());
+					break;	
+				case "AuditEnd":
+					myNewAuditReferenceRecord.setAuditEnd( castJavaUtilDateToJavaSQLdate((Date) cellIterator.next().getDateCellValue() ));
+               		checkCounter++;
+               		if (Main.verbose) System.out.println(" ---> AuditEnd = "+ myNewAuditReferenceRecord.getAuditEnd());
+					break;	
+				case "AuditByManager":
+					if ( cellIterator.next().getNumericCellValue() == 1 ) {
+						myNewAuditReferenceRecord.setAuditByManager(true);
+               		} else {
+               			myNewAuditReferenceRecord.setAuditByManager(false);
+               		}
+               		checkCounter++;
+               		if (Main.verbose) System.out.println(" ---> AuditByManager = "+ myNewAuditReferenceRecord.getAuditByManager());
+					break;
+				case "DataLoadType":
+					myNewAuditReferenceRecord.setDataLoadType(cellIterator.next().toString());		
+               		checkCounter++;
+               		if (Main.verbose) System.out.println(" ---> DataLoadType = "+ myNewAuditReferenceRecord.getDataLoadType());
+					break;	
+				case "eMACCyclesTimelineID":
+					myNewAuditReferenceRecord.seteMACyclesTimelineID( (int) cellIterator.next().getNumericCellValue());
+               		checkCounter++;
+               		if (Main.verbose) System.out.println(" ---> eMACCyclesTimelineID = "+ myNewAuditReferenceRecord.geteMACyclesTimelineID());
+					break;	
+				case "EntityTransferRule":
+					// We have strict possibilities for this
+					String myEntityTransferRule = cellIterator.next().toString();
+					if ( myEntityTransferRule.equals("no transfer allowed") || 
+							myEntityTransferRule.equals("transfer to peer authorizer") || 
+							myEntityTransferRule.equals("transfer to TELUS manager") ) {
+						myNewAuditReferenceRecord.setEntityTransferRule(myEntityTransferRule);	
+	               		checkCounter++;
+	               		if (Main.verbose) System.out.println(" ---> EntityTransferRule = "+ myNewAuditReferenceRecord.getEntityTransferRule());
+					}
+					
+					break;
+				case "AuditManager":
+					// AuditManager is also the audit creator
+					String auditCreator = cellIterator.next().toString();
+					myNewAuditReferenceRecord.setCreatedBy(auditCreator);
+					myNewAuditReferenceRecord.setCreatedDateTime(null);
+					myNewAuditReferenceRecord.setLastUpdatedBy(auditCreator);
+					myNewAuditReferenceRecord.setLastUpdatedDateTime(null);
+               		checkCounter++;
+               		if (Main.verbose) System.out.println(" ---> AuditManager = "+ myNewAuditReferenceRecord.getCreatedBy());
+					break;	
+				default:
+					//System.out.println("Do nothing");
+					break;
                 }
+
             }
         }
         
@@ -425,28 +555,7 @@ public class Ops_ExcelDataLoader {
         	Main.cleanUp();
         	System.exit(0);
         } else {
-        	
-    		AuditTypeReference myNewAuditReferenceRecord = new AuditTypeReference(
-    				-1, 
-    				auditName, 
-    				auditDescription, 
-    				castJavaUtilDateToJavaSQLdate(auditStart), 
-    				castJavaUtilDateToJavaSQLdate(auditEnd), 
-        			auditInstructionsEN,
-        			auditInstructionsFR,
-        			uDEAprimaryFieldsEN,
-        			uDEAprimaryFieldsFR,
-        			uDEAsecondaryFieldsEN,
-        			uDEAsecondaryFieldsFR,
-        			auditByManager,
-        			dataLoadType,
-        			eMACyclesTimelineID, 
-    				useEmac, 
-    				null, 
-    				auditManager, 
-    				null, 
-    				auditManager);     
-    				
+        	   				
     		newAuditTypeReferenceID = myNewAuditReferenceRecord.create(Main.mainDB);
       		
         }
@@ -468,7 +577,7 @@ public class Ops_ExcelDataLoader {
 	
 	
 	/**
-	 * A method that takes a special Excel template and loads up all the data into the eAUDIT database
+	 * A method that takes a special Escale template and loads up all the data into the eAUDIT database
 	 * @param fullPathToSpreadsheet
 	 */
 	public static void loadFromExcelTemplate(String fullPathToSpreadsheet ) {
@@ -498,6 +607,8 @@ public class Ops_ExcelDataLoader {
 					Main.cleanUp();
 					System.exit(0);
 				}
+		   		
+		   		System.out.println("Processed sheet and created new auditTypeReference record with id = "+newAuditTypeReferenceID);
 				
 				// We can proceed with the data load since the auditTypeReference object was successfully created. Get the second sheet to find data details
 		   		System.out.println("Processing sheet "+workbook.getSheetName(1));
@@ -508,7 +619,7 @@ public class Ops_ExcelDataLoader {
 		   		System.out.println("Sheet processed. There are " + sheetDataHashMap.size() + " separate entitlement audits to load for this AuditTypeReference record # " + newAuditTypeReferenceID );
 		   		
 		   		// Finally, we can leverage the jEAUDIT library to mass-load these data into the database
-		   		AuditDataLoaderObjectUtil.massLoad(sheetDataHashMap, true, Main.mainDB);
+		   		AuditDataLoaderObjectUtil.bulkCreate(sheetDataHashMap, true, Main.mainDB);
 		   		
 		   		
 		   			
