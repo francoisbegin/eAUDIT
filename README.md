@@ -3,7 +3,9 @@ eAUDIT is a project I worked on which formed the basis of a SANS Gold paper (htt
 
 This project was eventually implemented at my workplace, and the tool is still in use today. 
 
-I am no longer involved with eAUDIT, but I am leaving my original code here in case it might be of interest to someone trying to solve the problem I addressed with eAUDIT : <i>how do you audit user entitlements in an environment where you do not have the luxury of a full/automated RBAC implementation?</i>
+I am no longer involved with eAUDIT, but I am leaving my original code here in case it might be of interest to someone trying to solve the problem I addressed with eAUDIT. That problem was:
+
+<i>How do you audit user entitlements in an environment where you do not have the luxury of a full/automated RBAC implementation?</i>
 
 Please note that the data model presented in my gold paper has changed slightly since the publication of the paper. The code and files in this repo reflect the new data model.
 
