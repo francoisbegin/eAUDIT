@@ -1,5 +1,5 @@
 # eAUDIT
-eAUDIT is a project I worked on which formed the basis of a SANS Gold paper (https://www.sans.org. The paper was published in June of 2015 and can be downloaded here: https://www.sans.org/reading-room/whitepapers/auditing/eaudit-designing-generic-tool-review-entitlements-36027. I also presented my paper during the 2015 SANS conference in Las Vegas. The paper & prosentation cover the high-level design and implementation of eAUDIT. 
+eAUDIT is a project I worked on which formed the basis of a SANS Gold paper (https://www.sans.org) published in June of 2015. The paper can be downloaded here: https://www.sans.org/reading-room/whitepapers/auditing/eaudit-designing-generic-tool-review-entitlements-36027. I also presented my paper during the 2015 SANS conference in Las Vegas. The paper & prosentation cover the high-level design and implementation of eAUDIT. 
 
 This project was eventually implemented at my workplace, and the tool is still in use today. 
 
